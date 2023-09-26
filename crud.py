@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy import exists
 
 from auth import authenticate_user, create_access_token
 from config import ACCESS_TOKEN_EXPIRE_MINUTES
@@ -23,6 +24,9 @@ session = Session(bind=engine)
 
 @app.post('/user/register', response_model=UserCreate)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    db_username = User(username=user.username).username
+    if db_username is not None or db_username:
+        raise HTTPException(status_code=400, detail="User with the username already exists")
     db_user = User(username=user.username, password=bcrypt_sha256.hash(user.password))
     db.add(db_user)
     db.commit()
@@ -47,4 +51,3 @@ def login_for_access_token(user: UserCreate, db: Session = Depends(get_db)):
         data={"sub": user.username}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
-
