@@ -24,7 +24,7 @@ session = Session(bind=engine)
 
 @app.post('/user/register', response_model=UserCreate)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    db_username = User(username=user.username).username
+    db_username = db.query(User).filter_by(username=user.username).first()
     if db_username is not None or db_username:
         raise HTTPException(status_code=400, detail="User with the username already exists")
     db_user = User(username=user.username, password=bcrypt_sha256.hash(user.password))
