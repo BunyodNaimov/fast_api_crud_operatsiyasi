@@ -7,6 +7,12 @@ class UserCreate(BaseModel):
     password: str
 
 
+class UserUpdate(BaseModel):
+    username: str
+    password: str
+    is_active: str
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
